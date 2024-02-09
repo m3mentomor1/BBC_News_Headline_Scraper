@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
 import requests
 from datetime import datetime
+import pandas as pd
+import os
 
 # Create a header
 headers = {'User-agent': 'Mozilla/5.0'}
@@ -31,27 +33,36 @@ def bbc_news_scraper(keyword=None):
                 if 'bbc' not in news_title:
                     news_list.append((news_title, news_date))
 
-    # Print source and current date & time
-    print("Source:", URL)
-    print("Date & Time:", datetime.now().strftime("%b %d, %Y | %I:%M %p"))
-    print("\nNews Headlines:")
+    # Store news headlines in a DataFrame
+    news_df = pd.DataFrame(news_list, columns=['Headline', 'Posted'])
 
     # Goes through the list and searches for the keyword
     if keyword:
         for i, (title, date) in enumerate(news_list):
-            text = ''
             if keyword.lower() in title.lower():
-                text = ' <------------ KEYWORD'
+                news_df.loc[i, 'Keyword'] = keyword
 
-            # Separate the relative time from the rest of the title
-            time_index = date.find(' ')
-            relative_time = date[time_index + 1:]
-            print(f"{i + 1}. '{title}' \nPosted: {date[:time_index]} {relative_time} {text}\n")
-    else:
-        for i, (title, date) in enumerate(news_list):
-            # Separate the relative time from the rest of the title
-            time_index = date.find(' ')
-            relative_time = date[time_index + 1:]
-            print(f"{i + 1}. '{title}' \nPosted: {date[:time_index]} {relative_time}\n")
+    return news_df
 
-bbc_news_scraper()
+# Display source and current date & time
+print("Source:", URL)
+print("Date & Time:", datetime.now().strftime("%b %d, %Y | %I:%M %p\n"))
+
+# Call the function without specifying a keyword
+news_dataframe = bbc_news_scraper()
+
+# Display headlines in console output
+print(news_dataframe)
+
+# Ask user for file path and save the DataFrame to a CSV file
+file_path = r'C:\Visual Studio Code (Workspace)\Web\bbc_news_headlines.csv'
+
+if os.path.exists(file_path):
+    os.remove(file_path)  # Delete existing file if it exists
+
+news_dataframe.to_csv(file_path, index=False)
+
+if os.path.exists(file_path):
+    print(f"\nThe scraped data is saved to '{file_path}'.")
+else:
+    print("\nScraped data was not saved.")

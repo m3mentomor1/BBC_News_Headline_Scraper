@@ -15,7 +15,6 @@ html = request.content
 # Create some soup
 soup = BeautifulSoup(html, 'html.parser')
 
-
 def bbc_news_scraper(keyword=None):
     news_list = []
 
